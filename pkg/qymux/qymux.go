@@ -73,7 +73,7 @@ func (q *Qymux) Listen() (*dialer.Listener, error) {
 func DialAgent(sess transport.MuxSession, opts ...grpc.DialOption) (*grpc.ClientConn, error) {
 	// 配置 gRPC Keepalive，快速检测连接断开
 	kacp := keepalive.ClientParameters{
-		Time:                10 * time.Second, // 每10秒发送一次 ping（避免 too_many_pings）
+		Time:                30 * time.Second, // 每30秒发送一次 ping（避免 too_many_pings）
 		Timeout:             2 * time.Second,  // ping 超时2秒认为连接断开
 		PermitWithoutStream: true,            // 没有活跃 stream 也发送 ping
 	}

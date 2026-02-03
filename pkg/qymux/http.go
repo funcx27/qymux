@@ -32,7 +32,8 @@ func DialHTTP(sess transport.MuxSession, targetURL string) (*http.Client, error)
 
 	return &http.Client{
 		Transport: transport,
-		Timeout:   30 * time.Second,
+		// 移除 Timeout 以支持长连接（如 Watch）
+		// 依赖底层 Stream 的 deadline 控制
 	}, nil
 }
 
@@ -58,7 +59,8 @@ func (t *sessionTransport) RoundTrip(req *http.Request) (*http.Response, error) 
 	defer stream.Close()
 
 	// 设置流的截止时间（超时）
-	stream.SetDeadline(time.Now().Add(30 * time.Second))
+	// 使用 10 分钟超时以支持长连接（如 Watch、Logs 等）
+	stream.SetDeadline(time.Now().Add(10 * time.Minute))
 
 	// 3. 写入 HTTP 请求到流
 	// 格式：METHOD PATH HTTP/1.1\r\nHeaders\r\n\r\nBody
@@ -110,7 +112,8 @@ func handleStream(stream net.Conn, target *url.URL) {
 	defer stream.Close()
 
 	// 设置超时
-	stream.SetDeadline(time.Now().Add(30 * time.Second))
+	// 使用 10 分钟超时以支持长连接（如 Watch、Logs 等）
+	stream.SetDeadline(time.Now().Add(10 * time.Minute))
 
 	// 1. 从流读取 HTTP 请求
 	req, err := http.ReadRequest(bufio.NewReader(stream))
